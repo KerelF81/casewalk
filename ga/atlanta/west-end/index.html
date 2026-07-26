@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Last Order — Casewalk West End</title>
+<meta name="description" content="A walking mystery through Atlanta's West End, from Casewalk.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ece2cd;
+    --paper-2:#e4d7bd;
+    --ink:#211c16;
+    --ink-soft:#6b5d46;
+    --oxblood:#8a2534;
+    --oxblood-deep:#6c1a27;
+    --brass:#b5893b;
+    --dusk:#233542;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Hanken Grotesk', system-ui, sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 8%, rgba(181,137,59,0.10), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(138,37,52,0.08), transparent 45%),
+      linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+    min-height:100vh;
+    line-height:1.55;
+  }
+  h1,h2,h3{font-family:'Fraunces', serif; color:var(--ink); font-weight:600; margin:0 0 0.4em;}
+  h1{font-size:1.9rem;}
+  h2{font-size:1.3rem;}
+  h3{font-size:1.05rem;}
+  p{margin:0 0 1em;}
+  a{color:var(--oxblood-deep); text-decoration-thickness:1px;}
+  a:hover{color:var(--oxblood);}
+  :focus-visible{outline:3px solid var(--brass); outline-offset:2px; border-radius:2px;}
+  .wrap{max-width:640px; margin:0 auto; padding:20px 18px 60px;}
+  header.top{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+    padding:22px 0 18px; border-bottom:1px solid rgba(107,93,70,0.25);
+    margin-bottom:22px;
+  }
+  .brandline{font-family:'Special Elite', monospace; letter-spacing:0.14em; font-size:0.72rem; color:var(--ink-soft); text-transform:uppercase; margin-bottom:6px;}
+  .case-title{font-size:1.6rem; margin-bottom:2px;}
+  .case-loc{font-size:0.88rem; color:var(--ink-soft);}
+  .seal-col{display:flex; flex-direction:column; align-items:center; gap:8px; flex:0 0 auto;}
+  .leg-dots{display:flex; gap:6px;}
+  .leg-dot{width:9px; height:9px; border-radius:50%; background:rgba(107,93,70,0.3); border:1px solid var(--brass);}
+  .leg-dot.done{background:var(--oxblood-deep);}
+  .leg-dot.current{background:var(--brass);}
+  .crack{fill:none; stroke:var(--dusk); stroke-width:2.2; stroke-linecap:round; stroke-dasharray:90; stroke-dashoffset:90; opacity:0; transition:stroke-dashoffset .9s ease, opacity .25s ease;}
+  .crack.active{stroke-dashoffset:0; opacity:0.9;}
+  @media (prefers-reduced-motion: reduce){ .crack{transition:none;} }
+  .card{
+    background:rgba(236,226,205,0.55);
+    border:1px solid rgba(181,137,59,0.4);
+    border-radius:4px;
+    padding:24px 22px;
+    margin-bottom:18px;
+    box-shadow:0 1px 0 rgba(255,255,255,0.4) inset;
+  }
+  .voice{font-family:'Fraunces', serif; font-size:1.08rem; color:var(--ink);}
+  .voice + .voice{margin-top:-0.3em;}
+  .stopnum{font-family:'Special Elite', monospace; letter-spacing:0.08em; color:var(--oxblood-deep); font-size:0.85rem; text-transform:uppercase; margin-bottom:10px;}
+  .suspects{list-style:none; padding:0; margin:0;}
+  .suspects li{padding:12px 0; border-top:1px solid rgba(107,93,70,0.2);}
+  .suspects li:first-child{border-top:none;}
+  .suspects .note{color:var(--ink-soft); font-size:0.92rem;}
+  button, .btn{
+    font-family:'Hanken Grotesk', sans-serif; font-weight:600; font-size:0.98rem;
+    background:var(--oxblood-deep); color:var(--paper); border:none; border-radius:3px;
+    padding:13px 22px; cursor:pointer; display:inline-block; text-decoration:none;
+  }
+  button:hover, .btn:hover{background:var(--oxblood); color:var(--paper);}
+  button.ghost{background:transparent; color:var(--oxblood-deep); border:1px solid var(--oxblood-deep); padding:11px 20px;}
+  button.ghost:hover{background:rgba(138,37,52,0.08);}
+  button.link-btn{background:none; border:none; color:var(--oxblood-deep); text-decoration:underline; padding:4px 0; font-weight:500; font-size:0.9rem;}
+  .challenge-list{margin-bottom:14px;}
+  .challenge-row{display:flex; align-items:center; gap:10px; padding:8px 0; font-size:0.92rem; color:var(--ink-soft);}
+  .challenge-row .mark{width:20px; height:20px; border-radius:50%; border:1px solid var(--brass); flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:0.7rem;}
+  .challenge-row.solved .mark{background:var(--oxblood-deep); color:var(--paper); border-color:var(--oxblood-deep);}
+  .challenge-row.solved{color:var(--ink);}
+  label{display:block; font-weight:600; font-size:0.88rem; margin-bottom:6px;}
+  input[type="text"]{
+    width:100%; font-size:1rem; padding:12px 12px; border:1px solid var(--ink-soft);
+    border-radius:3px; background:#fbf6ec; color:var(--ink); font-family:'Hanken Grotesk', sans-serif;
+  }
+  form.challenge-form{margin-top:6px;}
+  .field-row{display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap;}
+  .field-row input{flex:1 1 200px;}
+  .feedback{margin-top:12px; font-size:0.92rem; padding:10px 12px; border-radius:3px; border-left:3px solid var(--brass); background:rgba(181,137,59,0.1);}
+  .feedback.correct{border-left-color:var(--oxblood-deep); background:rgba(138,37,52,0.08); color:var(--oxblood-deep); font-weight:600;}
+  .feedback.reveal{border-left-color:var(--dusk); background:rgba(35,53,66,0.08);}
+  .destination{margin-top:6px;}
+  .destination dl{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:0.94rem; margin:14px 0;}
+  .destination dt{color:var(--ink-soft); font-weight:600;}
+  .destination dd{margin:0;}
+  .actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;}
+  .quiet{font-size:0.85rem; color:var(--ink-soft);}
+  .toggle-code{margin-top:14px;}
+  .status-msg{font-size:0.9rem; color:var(--ink-soft); margin-top:10px;}
+  footer.bottom{margin-top:30px; text-align:center;}
+  .startover{position:fixed; bottom:14px; right:14px; font-size:0.75rem; color:var(--ink-soft); background:rgba(236,226,205,0.85); border:1px solid rgba(181,137,59,0.4); border-radius:3px; padding:6px 10px; cursor:pointer;}
+  .startover:hover{color:var(--oxblood-deep);}
+  .final-seal-wrap{display:flex; justify-content:center; margin:24px 0 8px;}
+  @media (max-width:420px){
+    header.top{flex-direction:column;}
+    .seal-col{align-self:flex-end;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brandline">Casewalk &middot; A walking case</div>
+      <h1 class="case-title" id="caseTitle"></h1>
+      <div class="case-loc" id="caseLoc"></div>
+    </div>
+    <div class="seal-col">
+      <svg viewBox="0 0 100 100" width="60" height="60" aria-hidden="true">
+        <circle cx="50" cy="50" r="45" fill="var(--oxblood)" stroke="var(--brass)" stroke-width="3"></circle>
+        <text x="50" y="59" text-anchor="middle" font-family="Special Elite, monospace" font-size="26" fill="var(--paper)">CW</text>
+        <path id="crack0" class="crack" d="M50 8 L46 30 L57 41 L44 57"></path>
+        <path id="crack1" class="crack" d="M92 50 L68 46 L59 58 L69 75"></path>
+        <path id="crack2" class="crack" d="M50 92 L54 70 L40 59 L48 43"></path>
+      </svg>
+      <div class="leg-dots" id="legDots" aria-hidden="true"></div>
+    </div>
+  </header>
+  <main id="app" aria-live="polite"></main>
+</div>
+<button class="startover" id="startOverBtn" type="button">Start over</button>
+<script>
+(function(){
+"use strict";
+
+var DATA = {
+  "case": {
+    "title": "The Last Order",
+    "url": "/ga/atlanta/west-end",
+    "state": "Georgia", "city": "Atlanta", "neighborhood": "West End",
+    "theme": "general",
+    "narrator": "Inspector Miles Cobb",
+    "detective_intro": "I am Inspector Miles Cobb, and I do not own a car. I have never needed one. A city keeps its secrets at street level, and a case, in my experience, is only a walk that has not been taken yet. You wrote asking whether you had the makings of a detective. Let us find out on foot, in the West End, where the trouble began.",
+    "client_brief": "My client is Miss Etta Mae Colton, who runs a small supper club off the boulevard called The Last Order. Her grandmother left her a notebook holding every recipe the family ever guarded, and on the eve of the city cook-off that notebook walked out of a locked kitchen. Four people had the run of that kitchen. Etta Mae wants it home before the judges taste a thing. I want to know who carried it, and why. The answers are written on the neighborhood. Read the West End correctly and it will tell you where the thief went first.",
+    "suspects": [
+      { "name": "Sylvester Dupree", "role": "rival cook", "note": "Has coveted the family recipes for years." },
+      { "name": "Odessa Byrd", "role": "food writer", "note": "A long memory and a longer grudge." },
+      { "name": "Cornelius Rhodes", "role": "business partner", "note": "Quietly deep in debt." },
+      { "name": "Pearl Vann", "role": "pastry apprentice", "note": "Devoted to the grandmother who taught her." }
+    ],
+    "final_congrats": "Cornbread. Of course. Only one of our four takes cornbread with everything, and only one had flour on the hands, cracked skin, and a sweet tooth to match. Pearl Vann, the pastry apprentice. Here is the gentle truth of it. Pearl did not take the notebook to sell it or to spite anyone. She borrowed it to finish the one recipe the grandmother never completed, a cobbler meant for this very cook-off, so a piece of the old woman could sit on the judges table one more time. She meant to return it the moment it was done. It was always safe. You read a whole neighborhood to learn that, and you did it on foot, the only honest way. Etta Mae will have her notebook, the cook-off will go on, and the West End told you every word of the story if you knew how to listen. You have the makings of a detective, correspondent. There are other neighborhoods with other trouble, and I would rather not walk them alone. When you are ready, another case is waiting.",
+    "logging_endpoint": "/.netlify/functions/ping"
+  },
+  "legs": [
+    {
+      "leg_number": 1,
+      "intro": "Every case has a first step. The thief left the supper club and went to ground in the old heart of West End. Prove you know that ground. Three questions about this neighborhood, and the answers will point to the first door.",
+      "outro": "Well read. Three names the West End has answered to, and together they mark a spot.",
+      "unlock_reveal": "The trail leads to Portrait Coffee, in the Lottie Watkins Building on the boulevard. Our thief was seen there the morning after, hands dusted with flour, ordering a plain black coffee and saying nothing to anyone. Go and stand where they stood.",
+      "challenges": [
+        {
+          "n": 1,
+          "prompt": "Before West End borrowed a fashionable name, it was known for a single painted building at the crossroads of Lee Street and what is now the boulevard: a tavern that was also a stagecoach stop, post office, and polling place, and the only white-painted structure for miles. Give me the name it wore then. One word.",
+          "answer": "whitehall",
+          "accepted_variants": ["white hall"],
+          "near_misses": { "west end": "That is the name it took later. I want the tavern at the crossroads, the one dressed in white." },
+          "hint_ladder": [
+            "You want the name it carried before 1867, the tavern and not the theatre district.",
+            "It earned the name from its coat of paint, brilliant white when its neighbors were bare timber.",
+            "Two words spoken as one, White Hall. Enter WHITEHALL."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://en.wikipedia.org/wiki/West_End_(Atlanta)"
+        },
+        {
+          "n": 2,
+          "prompt": "In 1867 the growing suburb traded that frontier name for something with more polish, borrowed from the most fashionable theatre district in a great capital across the ocean. Name that city. One word.",
+          "answer": "london",
+          "accepted_variants": [],
+          "near_misses": {
+            "paris": "Wrong capital. The district that lent this neighborhood its name is in an English-speaking city.",
+            "west end": "That is the borrowed name itself. I want the city the original West End sits in."
+          },
+          "hint_ladder": [
+            "The neighborhood's own name, West End, is a theatre district. Name the city it sits in.",
+            "Cross the Atlantic to an English capital.",
+            "It is the capital of England. Enter LONDON."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://en.wikipedia.org/wiki/West_End_(Atlanta)"
+        },
+        {
+          "n": 3,
+          "prompt": "By 1870 two Atlanta businessmen formed a railway to link this suburb to the city, running cars along the main corridors. That line made West End one of Atlanta's original suburbs of a particular kind, named for the vehicle. Name the kind. One word.",
+          "answer": "streetcar",
+          "accepted_variants": ["street car"],
+          "near_misses": {
+            "trolley": "Close. Historians use a plainer word for the vehicle on these rails. Try again.",
+            "train": "Larger than what ran these streets. Think of the car on rails set into the road."
+          },
+          "hint_ladder": [
+            "The vehicle ran on rails set into the street, pulled at first by mules.",
+            "West End is called one of Atlanta's original blank suburbs. Fill the blank with the vehicle.",
+            "The word is STREETCAR."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://atlantawestend.com/our-history/"
+        }
+      ],
+      "destination": {
+        "location_id": "west-end-portrait-coffee",
+        "business_name": "Portrait Coffee",
+        "address": "1065 Ralph David Abernathy Blvd SW # A, Atlanta, GA 30310",
+        "lat": 33.73854109823578, "lng": -84.42272436238393,
+        "geofence_radius_m": 75,
+        "maps_link": "https://maps.app.goo.gl/EwCMBycqaWyfVnUj6",
+        "hours": "Mon to Fri 7AM to 4PM, Sat and Sun 8AM to 4PM",
+        "arrival_message": "You are on the right trail. This is the spot. Somewhere between the door and the counter, our flour-handed stranger sat and thought hard about what they had done.",
+        "arrival_nudge": "The thief ordered a coffee to look like any other patron. You might do the same, a small one, so you do not seem too eager while you listen. It helps a body blend in.",
+        "confirmation_code_word": "lottie watkins",
+        "confirmation_hint": "Look up. The building carries its name across the top."
+      }
+    },
+    {
+      "leg_number": 2,
+      "intro": "Flour on the hands. A baker, or someone who works close to one. Keep on. Three more questions, this time about the community West End became, and they will mark the next door.",
+      "outro": "Good. Gordon, Abernathy, Madonna, the names of a neighborhood that remade itself.",
+      "unlock_reveal": "They point up the boulevard to the Afro Centric Network. Our stranger stopped there too, and bought shea butter, the kind bakers use when flour cracks the skin. Follow.",
+      "challenges": [
+        {
+          "n": 1,
+          "prompt": "The boulevard you are walking, the spine of West End's old business district, carried a different name for more than a century, the name of a Confederate general. In 1991 the city retired it. What was that older street name. One word.",
+          "answer": "gordon",
+          "accepted_variants": [],
+          "near_misses": {
+            "abernathy": "That is the name it wears now. I asked for the name it shed in 1991.",
+            "lee": "Lee is the cross street. I want the length of the boulevard itself, before 1991."
+          },
+          "hint_ladder": [
+            "You want the name Ralph David Abernathy Boulevard carried before 1991.",
+            "It shares its name with a nearby park and a neighborhood just to the south.",
+            "The old name was Gordon. Enter GORDON."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://en.wikipedia.org/wiki/West_End_(Atlanta)"
+        },
+        {
+          "n": 2,
+          "prompt": "The man the boulevard now honors was a minister who led West Hunter Street Baptist Church here, marched beside Martin Luther King, and succeeded him as head of the Southern Christian Leadership Conference. Give me his surname. One word.",
+          "answer": "abernathy",
+          "accepted_variants": [],
+          "near_misses": {
+            "king": "King was his closest ally, but the boulevard honors the man who succeeded him.",
+            "lowery": "A different civil rights leader, honored on a nearby street. I want the name on this boulevard."
+          },
+          "hint_ladder": [
+            "His first names were Ralph David. I want the surname on the boulevard.",
+            "He led the SCLC after Dr. King and pastored West Hunter Street Baptist here.",
+            "The name is Abernathy."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://atlantawestend.com/our-history/"
+        },
+        {
+          "n": 3,
+          "prompt": "As West End became a thriving Black community, a cultural and religious institution acquired the old Gordon Street Theater and made it a neighborhood landmark: the Shrine of the Black ___. Fill the blank. One word.",
+          "answer": "madonna",
+          "accepted_variants": [],
+          "near_misses": {
+            "panther": "A different movement. The Shrine took its name from a sacred image, the Black blank.",
+            "jesus": "Close in spirit, but the Shrine is named for the mother, the Black blank."
+          },
+          "hint_ladder": [
+            "The Shrine is named for a sacred mother figure rendered in Black.",
+            "The word also names a Renaissance subject and a famous singer.",
+            "The word is Madonna."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://atlantawestend.com/our-history/"
+        }
+      ],
+      "destination": {
+        "location_id": "west-end-afro-centric-network",
+        "business_name": "Afro Centric Network",
+        "address": "576 Lee St SW Ste D, Atlanta, GA 30310",
+        "lat": 33.739348731798, "lng": -84.41386690674578,
+        "geofence_radius_m": 75,
+        "maps_link": "https://maps.app.goo.gl/VrLagjMMsLCfye6u8",
+        "hours": "Mon to Sat 10AM to 7PM, Sun 12PM to 6PM",
+        "arrival_message": "You are on the right trail. Here is where they eased their working hands. We are closing the distance.",
+        "arrival_nudge": "The thief bought a little something for dry hands. A bar of shea butter is a fair way to blend in, and honest neighborly custom besides.",
+        "confirmation_code_word": "natural",
+        "confirmation_hint": "Read the painted sign above the door, the line above Oils, Soaps, Butter."
+      }
+    },
+    {
+      "leg_number": 3,
+      "intro": "A baker with a sweet tooth and a tender conscience. One neighborhood left to read. Three last questions, and the final door will open.",
+      "outro": "There it is. Adair, Peeples, Beltline, the founding and the rebirth of this place.",
+      "unlock_reveal": "They lead to Q Time, the soul food room on the boulevard. Our thief eats there often, and always orders the same humble thing alongside the meal. Go and ask the counter what that is. I suspect it will name our culprit.",
+      "challenges": [
+        {
+          "n": 1,
+          "prompt": "The railway that built this suburb was formed in 1870 by Richard Peters and a partner whose surname now marks a park and a neighborhood just south of West End. Name the partner. One word.",
+          "answer": "adair",
+          "accepted_variants": [],
+          "near_misses": {
+            "peters": "Peters is one of the pair. I want the partner whose name marks the park to the south."
+          },
+          "hint_ladder": [
+            "His name is on Adair Park, the neighborhood just south of West End.",
+            "First names George Washington, surname shared with that park.",
+            "The name is Adair."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://atlantawestend.com/our-history/"
+        },
+        {
+          "n": 2,
+          "prompt": "After West End joined Atlanta in 1894, its residential streets filled with Victorian homes. One of them shares its sound with the word for people, but spells it with a double e. Name that West End street. One word.",
+          "answer": "peeples",
+          "accepted_variants": [],
+          "near_misses": {
+            "peoples": "You have the sound. The West End street spells it differently, with two e's and an l.",
+            "lee": "Lee is close by, but I want the street that sounds like people."
+          },
+          "hint_ladder": [
+            "Say the word for people out loud, then change the spelling.",
+            "It is spelled P E E P L E S.",
+            "The street is Peeples."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://en.wikipedia.org/wiki/West_End_(Atlanta)"
+        },
+        {
+          "n": 3,
+          "prompt": "In 2008, at the bottom of a recession, the first segment of a now-famous 22-mile trail and transit loop opened right here in West End, its model mile. Name that project. One word.",
+          "answer": "beltline",
+          "accepted_variants": ["belt line"],
+          "near_misses": {
+            "marta": "MARTA runs here too, but I want the trail and transit loop whose first mile opened in West End in 2008."
+          },
+          "hint_ladder": [
+            "It is a loop of old rail corridors turned into trails around the city.",
+            "Its name joins a word for a waistband with a word for a rail track.",
+            "The word is BeltLine."
+          ],
+          "reveal_after_attempts": 5,
+          "fact_source": "https://atlantawestend.com/our-history/"
+        }
+      ],
+      "destination": {
+        "location_id": "west-end-q-time-restaurant",
+        "business_name": "Q Time Restaurant",
+        "address": "1120 Ralph David Abernathy Blvd SW, Atlanta, GA 30310",
+        "lat": 33.738155477870095, "lng": -84.42441446441806,
+        "geofence_radius_m": 75,
+        "maps_link": "https://maps.app.goo.gl/7zLuL9BB1Ahcd3T19",
+        "hours": "Mon closed, Tue to Sun 11AM to 7PM",
+        "arrival_message": "You are on the right trail, and this is the end of it. Ask the counter what comes with every plate. The answer is the thief's favorite, and their tell.",
+        "arrival_nudge": "You have walked a long way. Order the peach cobbler. A detective is allowed one reward, and you will want to be sitting down for the finish.",
+        "confirmation_code_word": "cornbread",
+        "confirmation_hint": "Ask the server what is served alongside every meal here."
+      }
+    }
+  ]
+};
+
+var CASE = DATA["case"];
+var LEGS = DATA.legs;
+var STORAGE_KEY = "casewalk:" + CASE.url;
+var app = document.getElementById("app");
+var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+document.getElementById("caseTitle").textContent = CASE.title;
+document.getElementById("caseLoc").textContent = CASE.neighborhood + ", " + CASE.city + ", " + CASE.state + " \u00b7 with " + CASE.narrator;
+document.title = CASE.title + " \u2014 Casewalk";
+
+// ---------- state ----------
+function freshState(){
+  return {
+    screen: "brief", // brief | play | final
+    leg: 0,
+    stage: "intro", // intro | quiz | unlocked
+    solved: LEGS.map(function(l){ return l.challenges.map(function(){ return false; }); }),
+    attempts: LEGS.map(function(l){ return l.challenges.map(function(){ return 0; }); }),
+    arrived: LEGS.map(function(){ return false; })
+  };
+}
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return freshState();
+    var parsed = JSON.parse(raw);
+    if(!parsed || !parsed.solved || parsed.solved.length !== LEGS.length) return freshState();
+    return parsed;
+  }catch(e){ return freshState(); }
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+var state = loadState();
+
+// transient, not persisted
+var feedback = {}; // key "leg-ch" -> {type,text}
+var lastSubmitAt = {}; // key "leg-ch" -> timestamp
+var geoStatus = {}; // key legIdx -> "checking" | "denied" | "far" | null
+var codeVisible = {};
+
+// ---------- helpers ----------
+function normalize(str){
+  return String(str)
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^(the|a|an)\s+/, "");
+}
+function haversineMeters(lat1, lng1, lat2, lng2){
+  var R = 6371000;
+  function toRad(d){ return d * Math.PI / 180; }
+  var dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2) * Math.sin(dLng/2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+function logPing(locationId, label, verifiedBy){
+  try{
+    fetch(CASE.logging_endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locationId: locationId, label: label, verifiedBy: verifiedBy, ts: new Date().toISOString() }),
+      keepalive: true
+    }).catch(function(){});
+  }catch(e){}
+}
+function updateSeal(){
+  for(var i=0;i<3;i++){
+    var el = document.getElementById("crack" + i);
+    if(!el) continue;
+    var done = state.arrived[i] || (state.solved[i] && state.solved[i].every(Boolean) && (i < state.leg || state.screen === "final"));
+    if(state.solved[i] && state.solved[i].every(Boolean)) el.classList.add("active");
+    else el.classList.remove("active");
+  }
+  var dotsWrap = document.getElementById("legDots");
+  dotsWrap.innerHTML = "";
+  for(var j=0;j<LEGS.length;j++){
+    var dot = document.createElement("span");
+    var cls = "leg-dot";
+    if(state.arrived[j]) cls += " done";
+    else if(j === state.leg && state.screen === "play") cls += " current";
+    dot.className = cls;
+    dotsWrap.appendChild(dot);
+  }
+}
+
+// ---------- rendering ----------
+function render(){
+  updateSeal();
+  if(state.screen === "brief"){ renderBrief(); return; }
+  if(state.screen === "final"){ renderFinal(); return; }
+  var leg = LEGS[state.leg];
+  if(state.stage === "intro"){ renderLegIntro(leg); return; }
+  if(state.stage === "quiz"){ renderQuiz(leg); return; }
+  if(state.stage === "unlocked"){ renderUnlocked(leg); return; }
+}
+
+function renderBrief(){
+  var suspectsHtml = CASE.suspects.map(function(s){
+    return '<li><strong>' + escapeHtml(s.name) + '</strong> \u2014 ' + escapeHtml(s.role) +
+      '<br><span class="note">' + escapeHtml(s.note) + '</span></li>';
+  }).join("");
+  app.innerHTML =
+    '<section class="card">' +
+      '<p class="voice">' + escapeHtml(CASE.detective_intro) + '</p>' +
+      '<p class="voice">' + escapeHtml(CASE.client_brief) + '</p>' +
+    '</section>' +
+    '<section class="card">' +
+      '<h2>The suspects</h2>' +
+      '<ul class="suspects">' + suspectsHtml + '</ul>' +
+    '</section>' +
+    '<div class="actions"><button type="button" data-action="begin">Begin the walk</button></div>';
+}
+
+function renderLegIntro(leg){
+  app.innerHTML =
+    '<section class="card">' +
+      '<p class="stopnum">Leg ' + leg.leg_number + ' of ' + LEGS.length + '</p>' +
+      '<p class="voice">' + escapeHtml(leg.intro) + '</p>' +
+    '</section>' +
+    '<div class="actions"><button type="button" data-action="start-quiz">Read the questions</button></div>';
+}
+
+function renderQuiz(leg){
+  var legIdx = state.leg;
+  var solvedArr = state.solved[legIdx];
+  var currentIdx = solvedArr.findIndex(function(v){ return !v; });
+  if(currentIdx === -1){
+    state.stage = "unlocked";
+    saveState();
+    renderUnlocked(leg);
+    return;
+  }
+  var listHtml = leg.challenges.map(function(ch, i){
+    var isSolved = solvedArr[i];
+    var isCurrent = i === currentIdx;
+    if(i > currentIdx) return "";
+    return '<div class="challenge-row' + (isSolved ? ' solved' : '') + '">' +
+      '<span class="mark" aria-hidden="true">' + (isSolved ? "\u2713" : (i+1)) + '</span>' +
+      '<span>' + (isSolved ? "Question " + (i+1) + " solved" : (isCurrent ? "Question " + (i+1) + " of " + leg.challenges.length : "")) + '</span>' +
+    '</div>';
+  }).join("");
+
+  var ch = leg.challenges[currentIdx];
+  var key = legIdx + "-" + currentIdx;
+  var fb = feedback[key];
+  var fbHtml = "";
+  if(fb){
+    fbHtml = '<div class="feedback ' + fb.type + '" role="status">' + escapeHtml(fb.text) + '</div>';
+  }
+
+  app.innerHTML =
+    '<div class="challenge-list">' + listHtml + '</div>' +
+    '<section class="card">' +
+      '<p class="stopnum">Leg ' + leg.leg_number + ' \u00b7 Question ' + (currentIdx+1) + ' of ' + leg.challenges.length + '</p>' +
+      '<p class="voice">' + escapeHtml(ch.prompt) + '</p>' +
+      '<form class="challenge-form" data-action="submit-answer" data-leg="' + legIdx + '" data-ch="' + currentIdx + '">' +
+        '<label for="answerInput">Your answer</label>' +
+        '<div class="field-row">' +
+          '<input type="text" id="answerInput" name="answer" autocomplete="off" autocapitalize="off" spellcheck="false" required>' +
+          '<button type="submit">Submit</button>' +
+        '</div>' +
+      '</form>' +
+      fbHtml +
+    '</section>';
+
+  var inputEl = document.getElementById("answerInput");
+  if(inputEl) inputEl.focus();
+}
+
+function renderUnlocked(leg){
+  var legIdx = state.leg;
+  var dest = leg.destination;
+  var arrived = state.arrived[legIdx];
+
+  var arrivalBlockHtml;
+  if(arrived){
+    arrivalBlockHtml =
+      '<div class="feedback correct" role="status">' + escapeHtml(dest.arrival_message) + '</div>' +
+      '<div class="actions"><button type="button" data-action="continue-leg">' +
+        (legIdx < LEGS.length - 1 ? "Continue to the next leg" : "Close the case") +
+      '</button></div>';
+  }else{
+    var gs = geoStatus[legIdx];
+    var showCode = !!codeVisible[legIdx] || gs === "denied" || gs === "far" || gs === "error";
+    var statusHtml = "";
+    if(gs === "checking") statusHtml = '<p class="status-msg">Checking your location&hellip;</p>';
+    if(gs === "denied") statusHtml = '<p class="status-msg">Location wasn\u2019t available. Try the code word below.</p>';
+    if(gs === "far") statusHtml = '<p class="status-msg">Not quite there yet, or too far to confirm. Try the code word below.</p>';
+    if(gs === "error") statusHtml = '<p class="status-msg">Couldn\u2019t confirm your location. Try the code word below.</p>';
+
+    var codeHtml = "";
+    if(showCode){
+      var ckey = legIdx + "-code";
+      var cfb = feedback[ckey];
+      codeHtml =
+        '<form class="challenge-form" data-action="submit-code" data-leg="' + legIdx + '" style="margin-top:14px;">' +
+          '<label for="codeInput">Code word</label>' +
+          '<p class="quiet">' + escapeHtml(dest.confirmation_hint) + '</p>' +
+          '<div class="field-row">' +
+            '<input type="text" id="codeInput" name="code" autocomplete="off" autocapitalize="off" spellcheck="false" required>' +
+            '<button type="submit">Confirm</button>' +
+          '</div>' +
+        '</form>' +
+        (cfb ? '<div class="feedback ' + cfb.type + '" role="status">' + escapeHtml(cfb.text) + '</div>' : "");
+    }else{
+      codeHtml = '<div class="toggle-code"><button type="button" class="link-btn" data-action="show-code" data-leg="' + legIdx + '">Prefer to type a code word instead?</button></div>';
+    }
+
+    arrivalBlockHtml =
+      '<p class="voice">' + escapeHtml(dest.arrival_nudge) + '</p>' +
+      '<div class="actions"><button type="button" data-action="check-location" data-leg="' + legIdx + '">Check my location</button></div>' +
+      statusHtml + codeHtml;
+  }
+
+  app.innerHTML =
+    '<section class="card">' +
+      '<p class="voice">' + escapeHtml(leg.outro) + '</p>' +
+      '<p class="voice">' + escapeHtml(leg.unlock_reveal) + '</p>' +
+    '</section>' +
+    '<section class="card destination">' +
+      '<h2>' + escapeHtml(dest.business_name) + '</h2>' +
+      '<dl>' +
+        '<dt>Address</dt><dd>' + escapeHtml(dest.address) + '</dd>' +
+        '<dt>Hours</dt><dd>' + escapeHtml(dest.hours) + '</dd>' +
+      '</dl>' +
+      '<a class="btn" href="' + escapeAttr(dest.maps_link) + '" target="_blank" rel="noopener">Open in Maps</a>' +
+    '</section>' +
+    '<section class="card">' + arrivalBlockHtml + '</section>';
+}
+
+function renderFinal(){
+  app.innerHTML =
+    '<section class="card">' +
+      '<p class="voice">' + escapeHtml(CASE.final_congrats) + '</p>' +
+    '</section>' +
+    '<div class="final-seal-wrap">' +
+      '<svg viewBox="0 0 100 100" width="90" height="90" aria-hidden="true">' +
+        '<circle cx="50" cy="50" r="45" fill="var(--oxblood)" stroke="var(--brass)" stroke-width="3"></circle>' +
+        '<text x="50" y="59" text-anchor="middle" font-family="Special Elite, monospace" font-size="30" fill="var(--paper)">CW</text>' +
+        '<path class="crack active" d="M50 8 L46 30 L57 41 L44 57"></path>' +
+        '<path class="crack active" d="M92 50 L68 46 L59 58 L69 75"></path>' +
+        '<path class="crack active" d="M50 92 L54 70 L40 59 L48 43"></path>' +
+      '</svg>' +
+    '</div>' +
+    '<footer class="bottom"><a href="https://casewalk.city">Back to casewalk.city</a></footer>';
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+  });
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+// ---------- answer checking ----------
+function checkChallenge(legIdx, chIdx, rawInput){
+  var key = legIdx + "-" + chIdx;
+  var now = Date.now();
+  if(lastSubmitAt[key] && (now - lastSubmitAt[key]) < 2000){
+    return; // light rate limit, ignore silently-ish
+  }
+  lastSubmitAt[key] = now;
+
+  var ch = LEGS[legIdx].challenges[chIdx];
+  var norm = normalize(rawInput);
+  var validAnswers = [ch.answer].concat(ch.accepted_variants || []).map(normalize);
+
+  if(validAnswers.indexOf(norm) !== -1){
+    state.solved[legIdx][chIdx] = true;
+    delete feedback[key];
+    saveState();
+    render();
+    return;
+  }
+
+  var nearMisses = ch.near_misses || {};
+  var nmKeys = Object.keys(nearMisses);
+  for(var i=0;i<nmKeys.length;i++){
+    if(normalize(nmKeys[i]) === norm){
+      feedback[key] = { type: "nudge", text: nearMisses[nmKeys[i]] };
+      render();
+      return;
+    }
+  }
+
+  state.attempts[legIdx][chIdx] = (state.attempts[legIdx][chIdx] || 0) + 1;
+  var attempts = state.attempts[legIdx][chIdx];
+  if(attempts >= ch.reveal_after_attempts){
+    state.solved[legIdx][chIdx] = true;
+    feedback[key] = { type: "reveal", text: "In the interest of the case, I'll tell you plain: the answer was " + ch.answer.toUpperCase() + "." };
+    saveState();
+    render();
+    return;
+  }
+  var tier = Math.min(attempts - 1, ch.hint_ladder.length - 1);
+  feedback[key] = { type: "hint", text: ch.hint_ladder[tier] };
+  saveState();
+  render();
+}
+
+function checkCode(legIdx, rawInput){
+  var dest = LEGS[legIdx].destination;
+  var key = legIdx + "-code";
+  var norm = normalize(rawInput);
+  if(norm === normalize(dest.confirmation_code_word)){
+    state.arrived[legIdx] = true;
+    delete feedback[key];
+    delete geoStatus[legIdx];
+    saveState();
+    logPing(dest.location_id, dest.business_name, "codeword");
+    render();
+  }else{
+    feedback[key] = { type: "hint", text: "That's not quite it. " + dest.confirmation_hint };
+    render();
+  }
+}
+
+function checkLocation(legIdx){
+  var dest = LEGS[legIdx].destination;
+  if(!("geolocation" in navigator)){
+    geoStatus[legIdx] = "denied";
+    codeVisible[legIdx] = true;
+    render();
+    return;
+  }
+  geoStatus[legIdx] = "checking";
+  render();
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var d = haversineMeters(pos.coords.latitude, pos.coords.longitude, dest.lat, dest.lng);
+    if(d <= dest.geofence_radius_m){
+      state.arrived[legIdx] = true;
+      delete geoStatus[legIdx];
+      saveState();
+      logPing(dest.location_id, dest.business_name, "gps");
+      render();
+    }else{
+      geoStatus[legIdx] = "far";
+      codeVisible[legIdx] = true;
+      render();
+    }
+  }, function(err){
+    geoStatus[legIdx] = "error";
+    codeVisible[legIdx] = true;
+    render();
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+}
+
+// ---------- event delegation ----------
+document.body.addEventListener("click", function(e){
+  var actEl = e.target.closest("[data-action]");
+  if(!actEl) return;
+  var action = actEl.getAttribute("data-action");
+  if(action === "begin"){
+    state.screen = "play"; state.leg = 0; state.stage = "intro";
+    saveState(); render();
+  }else if(action === "start-quiz"){
+    state.stage = "quiz"; saveState(); render();
+  }else if(action === "continue-leg"){
+    var legIdx = state.leg;
+    geoStatus[legIdx] = null; codeVisible[legIdx] = false;
+    if(legIdx < LEGS.length - 1){
+      state.leg = legIdx + 1; state.stage = "intro";
+    }else{
+      state.screen = "final";
+    }
+    saveState(); render();
+  }else if(action === "check-location"){
+    checkLocation(parseInt(actEl.getAttribute("data-leg"), 10));
+  }else if(action === "show-code"){
+    codeVisible[parseInt(actEl.getAttribute("data-leg"), 10)] = true;
+    render();
+  }
+});
+
+document.body.addEventListener("submit", function(e){
+  var formEl = e.target.closest("[data-action]");
+  if(!formEl) return;
+  e.preventDefault();
+  var action = formEl.getAttribute("data-action");
+  if(action === "submit-answer"){
+    var legIdx = parseInt(formEl.getAttribute("data-leg"), 10);
+    var chIdx = parseInt(formEl.getAttribute("data-ch"), 10);
+    var val = formEl.querySelector("input[name=answer]").value;
+    checkChallenge(legIdx, chIdx, val);
+  }else if(action === "submit-code"){
+    var lIdx = parseInt(formEl.getAttribute("data-leg"), 10);
+    var cval = formEl.querySelector("input[name=code]").value;
+    checkCode(lIdx, cval);
+  }
+});
+
+document.getElementById("startOverBtn").addEventListener("click", function(){
+  if(window.confirm("Start this case over from the beginning?")){
+    state = freshState();
+    feedback = {}; lastSubmitAt = {}; geoStatus = {}; codeVisible = {};
+    saveState();
+    render();
+  }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
